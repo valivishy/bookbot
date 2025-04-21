@@ -1,58 +1,41 @@
-from curses.ascii import isalpha
+import sys
+from stats import (
+    get_num_words,
+    chars_dict_to_sorted_list,
+    get_chars_dict,
+)
 
 
-def open_book(path_to_file: str) -> str:
-    with open(path_to_file) as f:
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: python3 main.py <path_to_book>")
+        sys.exit(1)
+    book_path = sys.argv[1]
+
+    text = get_book_text(book_path)
+    num_words = get_num_words(text)
+    chars_dict = get_chars_dict(text)
+    chars_sorted_list = chars_dict_to_sorted_list(chars_dict)
+    print_report(book_path, num_words, chars_sorted_list)
+
+
+def get_book_text(path):
+    with open(path) as f:
         return f.read()
 
 
-def count_words(content: str) -> int:
-    return len(content.split())
+def print_report(book_path, num_words, chars_sorted_list):
+    print("============ BOOKBOT ============")
+    print(f"Analyzing book found at {book_path}...")
+    print("----------- Word Count ----------")
+    print(f"Found {num_words} total words")
+    print("--------- Character Count -------")
+    for item in chars_sorted_list:
+        if not item["char"].isalpha():
+            continue
+        print(f"{item['char']}: {item['num']}")
 
-
-def count_symbols(content: str) -> dict:
-    result = {}
-
-    for symbol in content:
-        value = symbol.lower()
-        if value in result:
-            result[value] += 1
-        else:
-            result[value] = 1
-    return result
-
-
-def count_alphabetic(content: str) -> list:
-    result = {}
-
-    for symbol in list(map(str.lower, list(filter(isalpha, content)))):
-        value = symbol.lower()
-        if value in result:
-            result[value] += 1
-        else:
-            result[value] = 1
-
-    return sorted(result.items(), key=lambda x: x[1], reverse=True)
-
-
-def print_report(source: str, content: str) -> str:
-    counter_alphabetic = count_alphabetic(content)
-
-    print(f"--- Begin report of {source} ---")
-    print(f"{count_words(content)} words found in the document")
-    print()
-    for letter, count in counter_alphabetic:
-        print(f"The '{letter}' character was found {count} times")
-    print("--- End report ---")
-
-def main():
-    source = "books/frankenstein.txt"
-    file_contents = open_book(source)
-    # print(file_contents)
-    # print(count_words(file_contents))
-    # print(count_symbols(file_contents))
-
-    print_report(source, file_contents)
+    print("============= END ===============")
 
 
 main()
